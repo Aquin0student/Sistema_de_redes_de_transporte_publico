@@ -41,15 +41,6 @@
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
-    // Lista de estações de metrô de Madrid
-    const stations = [
-      { name: 'Sol', lat: 40.4168, lng: -3.7038 },
-      { name: 'Atocha', lat: 40.4057, lng: -3.6883 },
-      { name: 'Callao', lat: 40.4203, lng: -3.7057 },
-      { name: 'Plaza de España', lat: 40.4238, lng: -3.7123 },
-      { name: 'Chamartín', lat: 40.4720, lng: -3.6823 }
-    ];
-
     let selectedStations = [];
     let markers = [];
     let polylines = []; // Array para armazenar as linhas do caminho

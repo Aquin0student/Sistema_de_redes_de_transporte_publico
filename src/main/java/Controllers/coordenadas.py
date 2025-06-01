@@ -6,7 +6,7 @@ def extract_stations(stops_file, vertices_file, output_file='output_stations.csv
     desired_stop_ids = set(vertices_df['stop_id'].str.strip())
 
     # Passo 2: Ler stops.txt e filtrar apenas stop_id, stop_lat, stop_lon
-    stops_df = pd.read_csv(stops_file, usecols=['stop_id', 'stop_lat', 'stop_lon'])
+    stops_df = pd.read_csv(stops_file, usecols=['stop_id', 'stop_lat', 'stop_lon', 'stop_name'])
 
     # Passo 3: Filtrar estações que estão em desired_stop_ids
     filtered_df = stops_df[stops_df['stop_id'].isin(desired_stop_ids)]
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
         # Exibir os primeiros resultados no console
         for station in result[:5]:
-            print(f"stop_id: {station['stop_id']}, stop_lat: {station['stop_lat']}, stop_lon: {station['stop_lon']}")
+            print(f"stop_id: {station['stop_id']}, stop_lat: {station['stop_lat']}, stop_lon: {station['stop_lon']}, stop_name: {station['stop_name']}")
 
     except Exception as e:
         print(f"Erro ao processar arquivos: {e}")
