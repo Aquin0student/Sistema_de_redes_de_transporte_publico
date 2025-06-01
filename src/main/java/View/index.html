@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    #map { height: 1000px; }
+    #map { height: 800px; }
     #terminal {
       background: #ffffff;
       color: #000000;
@@ -23,8 +23,8 @@
 <div class="container mx-auto p-4">
   <h1 class="text-2xl font-bold mb-4">Mapa de Estações de Metrô de Madrid - Selecione Duas Estações</h1>
   <div class="mb-4">
-    <label for="departure-time" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
-    <input type="time" id="departure-time" class="mt-1 p-2 border rounded-md" required>
+    <label for="horario-saida" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
+    <input type="time" id="horario-saida" class="mt-1 p-2 border rounded-md" required>
   </div>
   <div id="map" class="mb-4"></div>
   <div id="terminal" class="text-sm">Terminal: Clique em duas estações para obter o caminho mais curto.</div>
@@ -41,34 +41,6 @@
   let markers = [];
   let polylines = [];
 
-  function updateTerminal(message) {
-    const terminal = document.getElementById('terminal');
-    terminal.innerHTML += `<p>${message}</p>`;
-    terminal.scrollTop = terminal.scrollHeight;
-  }
-
-  function clearSelection() {
-    estacoesSelecionadas = [];
-    markers.forEach(marker => marker.setOpacity(1));
-    polylines.forEach(polyline => map.removeLayer(polyline));
-    polylines = [];
-    updateTerminal('Seleção de estações reiniciada.');
-  }
-
-  function drawPath(path) {
-    for (let i = 0; i < path.length - 1; i++) {
-      const polyline = L.polyline([
-        [path[i].lat, path[i].lng],
-        [path[i + 1].lat, path[i + 1].lng]
-      ], {
-        color: 'red',
-        weight: 3,
-        opacity: 0.7
-      }).addTo(map);
-      polylines.push(polyline);
-    }
-  }
-
   inicializaAsEstacoes()
 
   async function inicializaAsEstacoes() {
@@ -76,18 +48,11 @@
       const response = await fetch(`http://localhost:8080/grafo`);
       const data = await response.json();
 
-      data.forEach(station => {
-        const labelIcon = L.divIcon({
-          className: 'station-label',
-          html: `<div>${station.stopId}</div>`,
-          iconSize: [100, 20],
-          iconAnchor: [50, 10]
-        });
-
-        const estacao = L.marker([station.latitude, station.longitude])
+      data.forEach(estacao => {
+        const marker = L.marker([estacao.latitude, estacao.longitude])
                 .addTo(map)
-                .bindPopup(station.nomeDaEstacao);
-        estacao.on('click', () => selecionaEstacao());
+                .bindPopup(estacao.nome);
+        marker.on('click', () => selecionaEstacao(estacao, marker));
       });
 
     } catch (error) {
@@ -95,38 +60,81 @@
     }
   }
 
+  function selecionaEstacao(estacao, marker) {
+    if (estacoesSelecionadas.length < 2) {
+      estacoesSelecionadas.push(estacao);
+      markers.push(marker);
+      marker.setOpacity(0.5);
+    }
+    updateTerminal(`Estação selecionada: ${estacao.nome} [${estacao.latitude.toFixed(4)}, ${estacao.longitude}]`);
 
-  async function fetchShortestPath(station1, station2, departureTime) {
+    if (estacoesSelecionadas.length === 2) {
+      const horarioDeSaida = document.getElementById('horario-saida').value;
+      if (!horarioDeSaida) {
+        updateTerminal('Por favor, informe o horário de saída.');
+        limpaAsSelecoes(marker);
+        return;
+      }
+      buscaCaminhoMinimo(estacoesSelecionadas[0], estacoesSelecionadas[1], horarioDeSaida);
+    }
+  }
+
+  async function buscaCaminhoMinimo(estacao1, estacao2, horarioDeSaida) {
     try {
       const response = await fetch(`http://localhost:8080/grafo`);
       const data = await response.json();
 
-      updateTerminal(`Caminho mais curto: ${data.path.map(station => station.name).join(' -> ')}`);
-      updateTerminal(`Distância total: ${data.totalDistance.toFixed(2)} km`);
-      drawPath(data.path);
-      clearSelection();
+      const path = [
+        {
+          "nome": "ARGANDA DEL REY",
+          "latitude": 40.3037,
+          "longitude": -3.44752
+        },
+        {
+          "nome": "LA POVEDA",
+          "latitude": 40.3190,
+          "longitude": -3.47745
+        },
+        {
+          "nome": "RIVAS VACIAMADRID",
+          "latitude": 40.3284,
+          "longitude": -3.5206
+        }
+      ]
+      updateTerminal(`Caminho mais curto: ${path.map(estacao => estacao.nome).join(' -> ')}`);
+      // updateTerminal(`Distância total: ${data.totalDistance.toFixed(2)} km`);
+      desenhaCaminho(path);
+      limpaAsSelecoes();
     } catch (error) {
       updateTerminal(`Erro ao obter o caminho: ${error.message}`);
-      clearSelection();
+      limpaAsSelecoes();
     }
   }
 
-  function selecionaEstacao(station, marker) {
-    if (estacoesSelecionadas.length < 2) {
-      estacoesSelecionadas.push(station);
-      marker.setOpacity(0.5);
-      updateTerminal(`Estação selecionada: ${station.name} [${station.lat.toFixed(4)}, ${station.lng.toFixed(4)}]`);
+  function desenhaCaminho(path) {
+    for (let i = 0; i < path.length - 1; i++) {
+      const coordenadas = [
+        [path[i].latitude, path[i].longitude],
+        [path[i + 1].latitude, path[i + 1].longitude]
+      ]
+      L.polyline(coordenadas, { color: 'blue' }).addTo(map);
+      limpaAsSelecoes();
     }
+  }
 
-    if (estacoesSelecionadas.length === 2) {
-      const departureTime = document.getElementById('departure-time').value;
-      if (!departureTime) {
-        updateTerminal('Por favor, informe o horário de saída.');
-        clearSelection();
-        return;
-      }
-      fetchShortestPath(estacoesSelecionadas[0], estacoesSelecionadas[1], departureTime);
-    }
+  function updateTerminal(message) {
+    const terminal = document.getElementById('terminal');
+    terminal.innerHTML += `<p>${message}</p>`;
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
+  function limpaAsSelecoes() {
+    estacoesSelecionadas = [];
+    console.log(markers)
+    markers.forEach(marker => marker.setOpacity(1));
+    polylines.forEach(polyline => map.removeLayer(polyline));
+    polylines = [];
+    updateTerminal('Seleção de estações reiniciada.');
   }
 </script>
 </body>

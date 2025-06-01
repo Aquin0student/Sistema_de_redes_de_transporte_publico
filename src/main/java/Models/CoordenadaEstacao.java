@@ -1,18 +1,18 @@
 package Models;
 
 public class CoordenadaEstacao {
-    private String nomeDaEstacao;
+    private String nome;
     private double latitude;
     private double longitude;
 
     public CoordenadaEstacao(String nomeDaEstacao, double latitude, double longitude) {
-        this.nomeDaEstacao = nomeDaEstacao;
+        this.nome = nomeDaEstacao;
         this.latitude = latitude;
         this.longitude = longitude;
     }
 
-    public String getNomeDaEstacao() {
-        return nomeDaEstacao;
+    public String getNome() {
+        return nome;
     }
 
     public double getLatitude() {
@@ -26,7 +26,7 @@ public class CoordenadaEstacao {
     @Override
     public String toString() {
         return "{" +
-                "nomeDaEstacao: " + nomeDaEstacao +
+                "nome: " + nome +
                 ", latitude: " + latitude +
                 ", longitude: " + longitude +
                 '}';
