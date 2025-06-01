@@ -4,132 +4,130 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mapa de Estações de Metrô de Madrid</title>
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    #map { height: 500px; }
-    #terminal { 
-      background: #ffffff; 
-      color: #000000; 
-      font-family: 'Courier New', monospace; 
-      padding: 10px; 
-      height: 150px; 
-      overflow-y: auto; 
+    #map { height: 1000px; }
+    #terminal {
+      background: #ffffff;
+      color: #000000;
+      font-family: 'Courier New', monospace;
+      padding: 10px;
+      height: 150px;
+      overflow-y: auto;
       border-radius: 5px;
     }
   </style>
 </head>
 <body class="bg-gray-100">
-  <div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4">Mapa de Estações de Metrô de Madrid - Selecione Duas Estações</h1>
-    <div class="mb-4">
-      <label for="departure-time" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
-      <input type="time" id="departure-time" class="mt-1 p-2 border rounded-md" required>
-    </div>
-    <div id="map" class="mb-4"></div>
-    <div id="terminal" class="text-sm">Terminal: Clique em duas estações para obter o caminho mais curto.</div>
+<div class="container mx-auto p-4">
+  <h1 class="text-2xl font-bold mb-4">Mapa de Estações de Metrô de Madrid - Selecione Duas Estações</h1>
+  <div class="mb-4">
+    <label for="departure-time" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
+    <input type="time" id="departure-time" class="mt-1 p-2 border rounded-md" required>
   </div>
+  <div id="map" class="mb-4"></div>
+  <div id="terminal" class="text-sm">Terminal: Clique em duas estações para obter o caminho mais curto.</div>
+</div>
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    // Inicializa o mapa, centrado em Madrid
-    const map = L.map('map').setView([40.4168, -3.7038], 13); // Centro em Sol, Madrid
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-    }).addTo(map);
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  const map = L.map('map').setView([40.4168, -3.7038], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(map);
 
-    let selectedStations = [];
-    let markers = [];
-    let polylines = []; // Array para armazenar as linhas do caminho
+  let estacoesSelecionadas = [];
+  let markers = [];
+  let polylines = [];
 
-    // Adiciona marcadores para as estações
-    stations.forEach(station => {
-      const marker = L.marker([station.lat, station.lng])
-        .addTo(map)
-        .bindPopup(station.name);
-      markers.push(marker);
-      marker.on('click', () => handleStationClick(station, marker));
-    });
+  function updateTerminal(message) {
+    const terminal = document.getElementById('terminal');
+    terminal.innerHTML += `<p>${message}</p>`;
+    terminal.scrollTop = terminal.scrollHeight;
+  }
 
-    // Função para atualizar o terminal
-    function updateTerminal(message) {
-      const terminal = document.getElementById('terminal');
-      terminal.innerHTML += `<p>${message}</p>`;
-      terminal.scrollTop = terminal.scrollHeight;
+  function clearSelection() {
+    estacoesSelecionadas = [];
+    markers.forEach(marker => marker.setOpacity(1));
+    polylines.forEach(polyline => map.removeLayer(polyline));
+    polylines = [];
+    updateTerminal('Seleção de estações reiniciada.');
+  }
+
+  function drawPath(path) {
+    for (let i = 0; i < path.length - 1; i++) {
+      const polyline = L.polyline([
+        [path[i].lat, path[i].lng],
+        [path[i + 1].lat, path[i + 1].lng]
+      ], {
+        color: 'red',
+        weight: 3,
+        opacity: 0.7
+      }).addTo(map);
+      polylines.push(polyline);
     }
+  }
 
-    // Função para limpar seleção e linhas
-    function clearSelection() {
-      selectedStations = [];
-      markers.forEach(marker => marker.setOpacity(1)); // Restaura opacidade
-      polylines.forEach(polyline => map.removeLayer(polyline)); // Remove linhas
-      polylines = [];
-      updateTerminal('Seleção de estações reiniciada.');
-    }
+  inicializaAsEstacoes()
 
-    // Função para desenhar o caminho no mapa
-    function drawPath(path) {
-      for (let i = 0; i < path.length - 1; i++) {
-        const polyline = L.polyline([
-          [path[i].lat, path[i].lng],
-          [path[i + 1].lat, path[i + 1].lng]
-        ], {
-          color: 'red',
-          weight: 3,
-          opacity: 0.7
-        }).addTo(map);
-        polylines.push(polyline);
-      }
-    }
+  async function inicializaAsEstacoes() {
+    try {
+      const response = await fetch(`http://localhost:8080/grafo`);
+      const data = await response.json();
 
-    // Função para chamar o backend
-    async function fetchShortestPath(station1, station2, departureTime) {
-      try {
-        const response = await fetch('http://localhost:8080/shortest-path', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            startStation: { name: station1.name, lat: station1.lat, lng: station1.lng },
-            endStation: { name: station2.name, lat: station2.lat, lng: station2.lng },
-            departureTime: departureTime
-          })
+      data.forEach(station => {
+        const labelIcon = L.divIcon({
+          className: 'station-label',
+          html: `<div>${station.stopId}</div>`,
+          iconSize: [100, 20],
+          iconAnchor: [50, 10]
         });
-        const data = await response.json();
-        if (response.ok) {
-          updateTerminal(`Caminho mais curto: ${data.path.map(station => station.name).join(' -> ')}`);
-          updateTerminal(`Distância total: ${data.totalDistance.toFixed(2)} km`);
-          drawPath(data.path); // Desenha o caminho
-        } else {
-          updateTerminal(`Erro: ${data.message}`);
-        }
-        clearSelection(); // Limpa a seleção após exibir o caminho
-      } catch (error) {
-        updateTerminal(`Erro ao obter o caminho: ${error.message}`);
+
+        const estacao = L.marker([station.latitude, station.longitude])
+                .addTo(map)
+                .bindPopup(station.nomeDaEstacao);
+        estacao.on('click', () => selecionaEstacao());
+      });
+
+    } catch (error) {
+      updateTerminal(`Erro ao obter as estações: ${error.message}`);
+    }
+  }
+
+
+  async function fetchShortestPath(station1, station2, departureTime) {
+    try {
+      const response = await fetch(`http://localhost:8080/grafo`);
+      const data = await response.json();
+
+      updateTerminal(`Caminho mais curto: ${data.path.map(station => station.name).join(' -> ')}`);
+      updateTerminal(`Distância total: ${data.totalDistance.toFixed(2)} km`);
+      drawPath(data.path);
+      clearSelection();
+    } catch (error) {
+      updateTerminal(`Erro ao obter o caminho: ${error.message}`);
+      clearSelection();
+    }
+  }
+
+  function selecionaEstacao(station, marker) {
+    if (estacoesSelecionadas.length < 2) {
+      estacoesSelecionadas.push(station);
+      marker.setOpacity(0.5);
+      updateTerminal(`Estação selecionada: ${station.name} [${station.lat.toFixed(4)}, ${station.lng.toFixed(4)}]`);
+    }
+
+    if (estacoesSelecionadas.length === 2) {
+      const departureTime = document.getElementById('departure-time').value;
+      if (!departureTime) {
+        updateTerminal('Por favor, informe o horário de saída.');
         clearSelection();
+        return;
       }
+      fetchShortestPath(estacoesSelecionadas[0], estacoesSelecionadas[1], departureTime);
     }
-
-    // Manipula clique em uma estação
-    function handleStationClick(station, marker) {
-      if (selectedStations.length < 2) {
-        selectedStations.push(station);
-        marker.setOpacity(0.5); // Destaca o marcador selecionado
-        updateTerminal(`Estação selecionada: ${station.name} [${station.lat.toFixed(4)}, ${station.lng.toFixed(4)}]`);
-      }
-
-      if (selectedStations.length === 2) {
-        const departureTime = document.getElementById('departure-time').value;
-        if (!departureTime) {
-          updateTerminal('Por favor, informe o horário de saída.');
-          clearSelection();
-          return;
-        }
-        fetchShortestPath(selectedStations[0], selectedStations[1], departureTime);
-      }
-    }
-  </script>
+  }
+</script>
 </body>
 </html>

@@ -1,30 +1,24 @@
 package grafo_e_legal.trabalho_de_grafos.Grafo;
 
-import Models.Grafo;
+import Models.CoordenadaEstacao;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
 public class GrafoService {
+    private static final Logger log = LoggerFactory.getLogger(GrafoService.class);
 
-    private final Grafo grafo;
-
-    public GrafoService() {
-        this.grafo = new Grafo();
-    }
-
-    public Grafo getGrafo() {
-        return grafo;
-    }
-
-    public List<String> buscaCoordenadasDasEstacoes() {
+    public List<CoordenadaEstacao> buscaCoordenadasDasEstacoes() {
         String caminhoArquivo = "src/main/resources/coordenadas_das_estacoes.csv";
-        List<String> coordenadas = new ArrayList<>();
+        List<CoordenadaEstacao> coordenadas = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(caminhoArquivo))) {
             String linha;
@@ -39,16 +33,20 @@ public class GrafoService {
                 String[] valores = linha.split(",");
 
                 if (valores.length >= 3) {
-                    String stopId = valores[0].trim();
-                    String lat = valores[1].trim();
-                    String lng = valores[2].trim();
-                    coordenadas.add(stopId + "," + lat + "," + lng);
+                    String nomeDaEstacao = valores[1].trim();
+                    double latitude = Double.parseDouble(valores[2].trim());
+                    double longitude = Double.parseDouble(valores[3].trim());
+
+                    CoordenadaEstacao coordenada = new CoordenadaEstacao(nomeDaEstacao, latitude, longitude);
+                    coordenadas.add(coordenada);
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
         }
 
+        System.out.println(coordenadas);
         return coordenadas;
     }
+
 }
