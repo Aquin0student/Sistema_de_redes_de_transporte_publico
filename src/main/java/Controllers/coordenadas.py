@@ -15,9 +15,6 @@ def extract_stations(stops_file, vertices_file, output_file='output_stations.csv
     filtered_df.to_csv(output_file, index=False)
     print(f"Resultado salvo em {output_file}")
 
-    # Opcional: Retornar como lista de dicionários para uso posterior
-    return filtered_df.to_dict(orient='records')
-
 if __name__ == "__main__":
     try:
         # Substitua pelos caminhos reais dos arquivos
