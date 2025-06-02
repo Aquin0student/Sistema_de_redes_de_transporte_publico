@@ -1,62 +1,36 @@
-package Models;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Vertice {
-
     private String id;
-    private String nomeEstacao;
-    private int tempoEspera;
-    private int tempoTotal;
-    private Vertice verticeAnterior;
+    private String nome_Estacao;
+    private int tempo_Espera;
+    private int tempo_Total;
+    private Vertice vertice_Anterior;
 
-    public Vertice() {
-        // Construtor vazio necessário para serialização/desserialização
-    }
-
-    public Vertice(String id, String nomeEstacao) {
+    public Vertice(String id, String nome_Estacao) {
         this.id = id;
-        this.nomeEstacao = nomeEstacao;
+        this.nome_Estacao = nome_Estacao;
+        this.tempo_Total = 0;
+        vertice_Anterior = null;
     }
 
-    public String getId() {
-        return id;
+    public String getId(){
+        return this.id;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setVerticeAnterior(Vertice anterior){
+        this.vertice_Anterior = anterior;
     }
 
-    public String getNomeEstacao() {
-        return nomeEstacao;
+    public Vertice getVerticeAnterior(){
+        return this.vertice_Anterior;
     }
 
-    public void setNomeEstacao(String nomeEstacao) {
-        this.nomeEstacao = nomeEstacao;
+    public String getNome(){return this.nome_Estacao;}
+
+    public void setTempoTotal(int tempo){
+        this.tempo_Total = tempo;
     }
 
-    public int getTempoEspera() {
-        return tempoEspera;
-    }
-
-    public void setTempoEspera(int tempoEspera) {
-        this.tempoEspera = tempoEspera;
-    }
-
-    public int getTempoTotal() {
-        return tempoTotal;
-    }
-
-    public void setTempoTotal(int tempoTotal) {
-        this.tempoTotal = tempoTotal;
-    }
-
-    public Vertice getVerticeAnterior() {
-        return verticeAnterior;
-    }
-
-    public void setVerticeAnterior(Vertice verticeAnterior) {
-        this.verticeAnterior = verticeAnterior;
+    public int getTempo_Total() {
+        return tempo_Total;
     }
 }

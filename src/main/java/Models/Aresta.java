@@ -1,61 +1,48 @@
-package Models;
+import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class Aresta {
-
-    private static int contadorId = 1;
-    private int id;
-    private int tempoDeslocamento;
+    private int id = 0 ; // Gerado (no csv não possui id para as arestas)
+    private int tempo_Deslocamento;
+    private int tempo_total;
     private Vertice origem;
     private Vertice destino;
-    private String idLinha;
+    private String id_Linha;
 
-    public Aresta() {
-    }
-
-    public Aresta(int tempoDeslocamento, Vertice origem, Vertice destino, String idLinha) {
-        this.id = contadorId++;
-        this.tempoDeslocamento = tempoDeslocamento;
+    public Aresta(int tempo_Deslocamento, Vertice origem, Vertice destino, String id_Linha){
+        this.id += 1;
+        this.tempo_Deslocamento = tempo_Deslocamento;
         this.origem = origem;
         this.destino = destino;
-        this.idLinha = idLinha;
+        this.id_Linha = id_Linha;
+        this.tempo_total = 0;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public int getTempoDeslocamento() {
-        return tempoDeslocamento;
-    }
-
-    public void setTempoDeslocamento(int tempoDeslocamento) {
-        this.tempoDeslocamento = tempoDeslocamento;
-    }
-
-    public Vertice getOrigem() {
-        return origem;
-    }
-
-    public void setOrigem(Vertice origem) {
+    public void setOrigem(Vertice origem){
         this.origem = origem;
     }
 
-    public Vertice getDestino() {
-        return destino;
+    public Vertice getOrigem(){
+        return this.origem;
     }
 
-    public void setDestino(Vertice destino) {
-        this.destino = destino;
+    public Vertice getDestino(){
+        return this.destino;
     }
 
-    public String getIdLinha() {
-        return idLinha;
+    public String getId_Linha(){
+        return this.id_Linha;
     }
 
-    public void setIdLinha(String idLinha) {
-        this.idLinha = idLinha;
+    public int getTempo(){
+        return this.tempo_Deslocamento;
     }
+
+    public void setTempoTotal(int tempo){
+        this.tempo_total = tempo;
+    }
+
+    public int getTempoTotal(){
+        return this.tempo_total;
+    }
+
 }
