@@ -45,7 +45,6 @@ public class GrafoService {
             e.printStackTrace();
         }
 
-        System.out.println(coordenadas);
         return coordenadas;
     }
 
