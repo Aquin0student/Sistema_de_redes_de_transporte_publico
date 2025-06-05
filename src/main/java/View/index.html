@@ -6,18 +6,38 @@
   <title>Mapa de Estações de Metrô de Madrid</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    #map { height: 800px; }
-    #terminal {
-      background: #ffffff;
-      color: #000000;
-      font-family: 'Courier New', monospace;
-      padding: 10px;
-      height: 150px;
-      overflow-y: auto;
-      border-radius: 5px;
-    }
-  </style>
+<style>
+  #map { height: 800px; }
+
+  .leaflet-tooltip-own {
+    background: white;
+    border: 1px solid gray;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 12px;
+    pointer-events: auto; 
+    cursor: pointer;      
+  }
+
+  .tooltip-selecionada {
+  background-color: #4ade80;
+  border-color: #16a34a; 
+  color: #000;
+}
+
+
+  #terminal {
+    background: #ffffff;
+    color: #000000;
+    font-family: 'Courier New', monospace;
+    padding: 10px;
+    height: 150px;
+    overflow-y: auto;
+    border-radius: 5px;
+  }
+</style>
+
 </head>
 <body class="bg-gray-100">
 <div class="container mx-auto p-4">
@@ -49,40 +69,49 @@
       const data = await response.json();
 
       data.forEach(estacao => {
-        const marker = L.marker([estacao.latitude, estacao.longitude])
-                .addTo(map)
-                .bindTooltip(estacao.nome, {
-                  permanent: true,
-                  direction: 'top',
-                  offset: [-14, 0],
-                  className: 'leaflet-tooltip-own'
-                });
-        marker.on('click', () => selecionaEstacao(estacao, marker));
+        const tooltip = L.tooltip({
+          permanent: true,
+          direction: 'top',
+          offset: [0, 0],
+          className: 'leaflet-tooltip-own'
+        })
+        .setLatLng([estacao.latitude, estacao.longitude])
+        .setContent(estacao.nome)
+        .addTo(map);
+
+        // Aguarda o tooltip ser adicionado ao DOM
+        setTimeout(() => {
+          const el = tooltip.getElement();
+          el.addEventListener('click', () => selecionaEstacao(estacao, tooltip));
+        }, 0);
       });
+
 
     } catch (error) {
       updateTerminal(`Erro ao obter as estações: ${error.message}`);
     }
   }
 
-  function selecionaEstacao(estacao, marker) {
-    if (estacoesSelecionadas.length < 2) {
-      estacoesSelecionadas.push(estacao);
-      markers.push(marker);
-      marker.setOpacity(0.5);
-    }
-    updateTerminal(`Estação selecionada: ${estacao.nome}`);
-
-    if (estacoesSelecionadas.length === 2) {
-      const horarioDeSaida = document.getElementById('horario-saida').value;
-      if (!horarioDeSaida) {
-        updateTerminal('Por favor, informe o horário de saída.');
-        limpaAsSelecoes(marker);
-        return;
-      }
-      buscaCaminhoMinimo(estacoesSelecionadas[0], estacoesSelecionadas[1], horarioDeSaida);
-    }
+function selecionaEstacao(estacao, elemento) {
+  if (estacoesSelecionadas.length < 2) {
+    estacoesSelecionadas.push(estacao);
+    markers.push(elemento);
+    const el = elemento.getElement();
+    el.classList.add("tooltip-selecionada");
   }
+  updateTerminal(`Estação selecionada: ${estacao.nome}`);
+
+  if (estacoesSelecionadas.length === 2) {
+    const horarioDeSaida = document.getElementById('horario-saida').value;
+    if (!horarioDeSaida) {
+      updateTerminal('Por favor, informe o horário de saída.');
+      limpaAsSelecoes();
+      return;
+    }
+    buscaCaminhoMinimo(estacoesSelecionadas[0], estacoesSelecionadas[1], horarioDeSaida);
+  }
+}
+
 
   async function buscaCaminhoMinimo(estacao1, estacao2, horarioDeSaida) {
     try {
@@ -132,14 +161,20 @@
     terminal.scrollTop = terminal.scrollHeight;
   }
 
-  function limpaAsSelecoes() {
-    estacoesSelecionadas = [];
-    console.log(markers)
-    markers.forEach(marker => marker.setOpacity(1));
-    polylines.forEach(polyline => map.removeLayer(polyline));
-    polylines = [];
-    updateTerminal('Seleção de estações reiniciada.');
-  }
+function limpaAsSelecoes() {
+  estacoesSelecionadas = [];
+  markers.forEach(el => {
+    const domEl = el.getElement();
+    domEl.style.opacity = 1;
+    domEl.classList.remove("tooltip-selecionada");
+  });
+  markers = [];
+  polylines.forEach(polyline => map.removeLayer(polyline));
+  polylines = [];
+  updateTerminal('Seleção de estações reiniciada.');
+}
+
+
 </script>
 </body>
 </html>
