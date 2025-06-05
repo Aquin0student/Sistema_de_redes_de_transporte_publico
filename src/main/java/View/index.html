@@ -51,7 +51,12 @@
       data.forEach(estacao => {
         const marker = L.marker([estacao.latitude, estacao.longitude])
                 .addTo(map)
-                .bindPopup(estacao.nome);
+                .bindTooltip(estacao.nome, {
+                  permanent: true,
+                  direction: 'top',
+                  offset: [-14, 0],
+                  className: 'leaflet-tooltip-own'
+                });
         marker.on('click', () => selecionaEstacao(estacao, marker));
       });
 
@@ -66,7 +71,7 @@
       markers.push(marker);
       marker.setOpacity(0.5);
     }
-    updateTerminal(`Estação selecionada: ${estacao.nome} [${estacao.latitude.toFixed(4)}, ${estacao.longitude}]`);
+    updateTerminal(`Estação selecionada: ${estacao.nome}`);
 
     if (estacoesSelecionadas.length === 2) {
       const horarioDeSaida = document.getElementById('horario-saida').value;
@@ -118,7 +123,6 @@
         [path[i + 1].latitude, path[i + 1].longitude]
       ]
       L.polyline(coordenadas, { color: 'blue' }).addTo(map);
-      limpaAsSelecoes();
     }
   }
 
