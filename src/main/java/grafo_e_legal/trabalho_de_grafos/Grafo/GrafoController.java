@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("grafo")
-@CrossOrigin(origins = "http://localhost:63342")
+@CrossOrigin(origins = "*")
 public class GrafoController {
 
     @Autowired
