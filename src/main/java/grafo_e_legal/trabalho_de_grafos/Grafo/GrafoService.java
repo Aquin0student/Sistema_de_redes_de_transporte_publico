@@ -107,7 +107,7 @@ public class GrafoService {
 
     public void adicionar_Estacoes(Grafo grafo){
         Lercsv leitor = new Lercsv();
-
+        // ajustar pra uasr o grafo
         this.todas_Estacoes = leitor.leitura_Vertices();
     }
 
