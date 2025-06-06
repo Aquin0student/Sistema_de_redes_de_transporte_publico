@@ -1,7 +1,6 @@
-package Models;
+package grafo_e_legal.trabalho_de_grafos.Models;
 
 import java.util.List;
-import java.util.Scanner;
 import java.util.ArrayList;
 
 public class Grafo {
@@ -49,6 +48,8 @@ public class Grafo {
         this.todas_Arestas = leitor.leitura_Arestas(this.todas_Estacoes);
     }
 
+    // Nao tem influencia do usuario
+
     public Vertice encontrarArestasNome(String nome){
         for(Vertice a : todas_Estacoes){
             if(nome.equals(a.getNome())){
@@ -57,6 +58,8 @@ public class Grafo {
         }
         return null;
     }
+
+    // Nao tem influencia do usuario
 
     public Aresta encontrarMenorAresta(List <Aresta> ListaBusca){
         Aresta menor = ListaBusca.get(0);
@@ -68,6 +71,8 @@ public class Grafo {
 
         return menor;
     }
+
+    // Nao tem influencia do usuario
 
     public int converterHoraParaSegundos(String horario) {
         try {
@@ -91,6 +96,7 @@ public class Grafo {
         }
     }
 
+    // Nao tem influencia do usuario
 
     public String converterSegundosParaHora(long segundosTotais) {
 
@@ -105,6 +111,7 @@ public class Grafo {
         return String.format("%02d:%02d:%02d", horas, minutos, segundos);
     }
 
+    // Nao tem influencia do usuario
 
     int calcularTempoParado(Aresta rota, int intervalo) {
         Lercsv leitor = new Lercsv();
@@ -130,6 +137,7 @@ public class Grafo {
         // Caso não, pegue esse horario e converta para minutos e retorne
 
     
+    // Nao tem influencia do usuario
 
     public boolean contemLista(String nome, List <Vertice> VerticesExplorados){
 
@@ -141,6 +149,8 @@ public class Grafo {
 
         return true;
     }
+
+
 
     public void preencherLista(Vertice ponto, Aresta menor, List <Aresta> ListaBusca, List <Vertice> VerticesExplorados, List <Aresta> ListaCaminhos){
 
@@ -174,6 +184,7 @@ public class Grafo {
         imprimirCaminho(v.getVerticeAnterior(), origem, VerticesExplorados);
         System.out.println(v.getNome());
     }
+
 
 
     public void buscaMenorCaminho(String origem, String destino, String hora){

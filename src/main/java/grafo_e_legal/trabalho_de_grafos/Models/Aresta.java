@@ -1,6 +1,4 @@
-package Models;
-
-import java.util.List;
+package grafo_e_legal.trabalho_de_grafos.Models;
 
 public class Aresta {
     private int id = 0 ; // Gerado (no csv não possui id para as arestas)

@@ -1,7 +1,6 @@
-package Models;
+import grafo_e_legal.trabalho_de_grafos.Models.Grafo;
+import grafo_e_legal.trabalho_de_grafos.Models.Lercsv;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 /* class Vertice {

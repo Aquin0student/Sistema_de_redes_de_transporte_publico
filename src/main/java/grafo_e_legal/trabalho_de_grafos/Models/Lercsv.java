@@ -1,4 +1,4 @@
-package Models;
+package grafo_e_legal.trabalho_de_grafos.Models;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,7 +16,7 @@ public class Lercsv {
     public List<Vertice> leitura_Vertices(){
         List<Vertice> listaVertices = new ArrayList<>();
 
-        try(BufferedReader leitor = new BufferedReader(new FileReader("vertices.csv"))){
+        try(BufferedReader leitor = new BufferedReader(new FileReader("src/vertices.csv"))){
             String linha;
             while ((linha = leitor.readLine()) != null) {
                 String[] campos = linha.split(",");
@@ -38,7 +38,7 @@ public class Lercsv {
 
         List<Aresta> listaArestas = new ArrayList<>();
 
-        try (BufferedReader leitor = new BufferedReader(new FileReader("arestas.csv"))){
+        try (BufferedReader leitor = new BufferedReader(new FileReader("src/arestas.csv"))){
              String linha;
              while ((linha = leitor.readLine()) != null) {
                  String[] campos = linha.split(",");

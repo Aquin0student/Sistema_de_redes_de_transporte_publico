@@ -1,4 +1,4 @@
-package Models;
+package grafo_e_legal.trabalho_de_grafos.Models;
 
 public class Vertice {
     private String id;
