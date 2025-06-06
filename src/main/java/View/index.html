@@ -115,7 +115,8 @@ function selecionaEstacao(estacao, elemento) {
 
   async function buscaCaminhoMinimo(estacaDeOrigem, estacaoDeDestino, horarioDeSaida) {
     try {
-      const response = await fetch(`http://localhost:8080/grafo/caminho-minimo?origem=${estacaDeOrigem}&destino=${estacaoDeDestino}&hora=${horarioDeSaida}`);
+      console.log("aq?", estacaDeOrigem.nome)
+      const response = await fetch(`http://localhost:8080/grafo/caminho-minimo?origem=${estacaDeOrigem.nome}&destino=${estacaoDeDestino.nome}&hora=${horarioDeSaida}`);
       const data = await response.json();
 
       // const path = [

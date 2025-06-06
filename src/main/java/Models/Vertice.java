@@ -1,3 +1,5 @@
+package Models;
+
 public class Vertice {
     private String id;
     private String nome_Estacao;

@@ -1,3 +1,5 @@
+package Models;
+
 import java.util.List;
 import java.util.Scanner;
 import java.util.ArrayList;
@@ -11,6 +13,18 @@ public class Grafo {
 
     public String getHora(){
         return this.hora;
+    }
+
+    public void setHora(String hora){
+        this.hora = hora;
+    }
+
+    public  List <Vertice> getTodasEstacoes(){
+        return this.todas_Estacoes;
+    }
+
+    public  List <Aresta> getTodasArestas(){
+        return this.todas_Arestas;
     }
 
     public Grafo(){
@@ -76,12 +90,12 @@ public class Grafo {
             int horas = Integer.parseInt(partes[0]);
             int minutos = Integer.parseInt(partes[1]);
             int segundos = Integer.parseInt(partes[2]);
-            
+
             // Validações adicionais
             if (horas < 0 || minutos < 0 || minutos >= 60 || segundos < 0 || segundos >= 60) {
                 throw new IllegalArgumentException("Valores de horário inválidos: " + horario);
             }
-            
+
             return horas * 3600 + minutos * 60 + segundos;
         } catch (IllegalArgumentException e) {
             System.out.println("Erro ao converter horário: " + e.getMessage());
@@ -127,7 +141,7 @@ public class Grafo {
         // Se o horario passar do ultimo que chega, printe na tela do front que é impossivel cumprir essa rota antes do metrô fechar
         // Caso não, pegue esse horario e converta para minutos e retorne
 
-    
+
 
     public boolean contemLista(String nome, List <Vertice> VerticesExplorados){
 
@@ -150,21 +164,21 @@ public class Grafo {
                 if (!busca.getId_Linha().equals(menor.getId_Linha())) {
                     busca.setTempoTotal(busca.getTempoTotal() + calcularTempoParado(busca, busca.getOrigem().getTempo_Total()));
                 }
-                
+
                 busca.setTempoTotal(busca.getTempoTotal() + ponto.getTempo_Total() + busca.getTempo());
 
                 Aresta aux = busca;
-                
+
                 busca.setOrigem(ponto);
-                
+
                 ListaBusca.add(busca);
-                
+
             }
         }
     }
 
     public void imprimirCaminho(Vertice v, String origem, List <Vertice> VerticesExplorados) {
-        
+
         if(v.getNome().equals(origem) ){
             System.out.println(v.getNome());
             return;

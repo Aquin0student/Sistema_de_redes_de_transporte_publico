@@ -1,11 +1,9 @@
 package grafo_e_legal.trabalho_de_grafos.Grafo;
 
 import Models.CoordenadaEstacao;
+import Models.GrafoService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -23,12 +21,11 @@ public class GrafoController {
     }
     
     @GetMapping("/caminho-minimo")
-    public List<CoordenadaEstacao> buscaCaminhoMinimo(
+    public void buscaCaminhoMinimo(
         @RequestParam String origem, 
         @RequestParam String destino, 
         @RequestParam String hora
     ){
-        System.out.print(origem, destino, hora);
         return grafoService.buscaCaminhoMinimo(origem, destino, hora);
     }
 
