@@ -1,50 +1,241 @@
- package Models;
+import java.util.List;
+import java.util.Scanner;
+import java.util.ArrayList;
 
- import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
- import java.util.List;
+public class Grafo {
 
- @JsonIgnoreProperties(ignoreUnknown = true)
- public class Grafo {
+    private List <Linha> linhas;
+    private List <Vertice> todas_Estacoes;
+    private List <Aresta> todas_Arestas;
+    private String hora;
 
-     private List<Linha> linhas;
-     private List<Vertice> todasEstacoes;
-     private List<Aresta> todasArestas;
+    public String getHora(){
+        return this.hora;
+    }
 
-     public Grafo() {}
+    public Grafo(){
+        adicionar_Estacoes();
+        adicionar_Arestas();
+    }
 
-     // Getters e Setters
-     public List<Linha> getLinhas() {
-         return linhas;
-     }
+    public void printarEstaoes(){
+        for(Vertice estacao : todas_Estacoes){
+            System.out.println(estacao.getId() + "Nome: " + estacao.getNome());
+        }
+    }
 
-     public void setLinhas(List<Linha> linhas) {
-         this.linhas = linhas;
-     }
+    public void printarArestas(){
+        for(Aresta aresta : todas_Arestas){
+            System.out.println("Origem: " + aresta.getOrigem().getNome() + " Destino: " + aresta.getDestino().getNome() + "Id Rota: " + aresta.getId_Linha());
+        }
+    }
 
-     public List<Vertice> getTodasEstacoes() {
-         return todasEstacoes;
-     }
+    public void adicionar_Linhas(){
+        Lercsv leitor = new Lercsv();
+    }
 
-     public void setTodasEstacoes(List<Vertice> todasEstacoes) {
-         this.todasEstacoes = todasEstacoes;
-     }
+    public void adicionar_Estacoes(){
+        Lercsv leitor = new Lercsv();
 
-     public List<Aresta> getTodasArestas() {
-         return todasArestas;
-     }
+        this.todas_Estacoes = leitor.leitura_Vertices();
+    }
 
-     public void setTodasArestas(List<Aresta> todasArestas) {
-         this.todasArestas = todasArestas;
-     }
+    public void adicionar_Arestas(){
 
-     // Métodos de leitura É NECESSARIO AJUSTAR ESSE METODO. ELE NAO DEVE FICAR AQUI
-//     public void adicionarEstacoes() {
-//         Lercsv leitor = new Lercsv();
-//         this.todasEstacoes = leitor.leituraVertices();
-//     }
-//
-//     public void adicionarArestas() {
-//         Lercsv leitor = new Lercsv();
-//         this.todasArestas = leitor.leituraArestas(this.todasEstacoes);
-//     }
- }
+        Lercsv leitor = new Lercsv();
+
+        this.todas_Arestas = leitor.leitura_Arestas(this.todas_Estacoes);
+    }
+
+    public Vertice encontrarArestasNome(String nome){
+        for(Vertice a : todas_Estacoes){
+            if(nome.equals(a.getNome())){
+                return a;
+            }
+        }
+        return null;
+    }
+
+    public Aresta encontrarMenorAresta(List <Aresta> ListaBusca){
+        Aresta menor = ListaBusca.get(0);
+        for(Aresta busca : ListaBusca){
+            if(busca.getTempoTotal() < menor.getTempoTotal()){
+                menor = busca;
+            }
+        }
+
+        return menor;
+    }
+
+    public int converterHoraParaSegundos(String horario) {
+        try {
+            String[] partes = horario.split(":");
+            if (partes.length != 3) {
+                throw new IllegalArgumentException("Formato de horário inválido: " + horario);
+            }
+            int horas = Integer.parseInt(partes[0]);
+            int minutos = Integer.parseInt(partes[1]);
+            int segundos = Integer.parseInt(partes[2]);
+            
+            // Validações adicionais
+            if (horas < 0 || minutos < 0 || minutos >= 60 || segundos < 0 || segundos >= 60) {
+                throw new IllegalArgumentException("Valores de horário inválidos: " + horario);
+            }
+            
+            return horas * 3600 + minutos * 60 + segundos;
+        } catch (IllegalArgumentException e) {
+            System.out.println("Erro ao converter horário: " + e.getMessage());
+            return -1;
+        }
+    }
+
+
+    public String converterSegundosParaHora(long segundosTotais) {
+
+        if (segundosTotais < 0) {
+            return "Horário inválido";
+        }
+        // Limita ao ciclo de 24 horas (86400 segundos)
+        segundosTotais = segundosTotais % 86400;
+        int horas = (int) (segundosTotais / 3600);
+        int minutos = (int) ((segundosTotais % 3600) / 60);
+        int segundos = (int) (segundosTotais % 60);
+        return String.format("%02d:%02d:%02d", horas, minutos, segundos);
+    }
+
+
+    int calcularTempoParado(Aresta rota, int intervalo) {
+        Lercsv leitor = new Lercsv();
+        long horaSaida = converterHoraParaSegundos(this.hora); // Horário inicial em segundos
+        long horaChegada = horaSaida + intervalo; // Soma o intervalo ao início
+        String horaChegadaTexto = converterSegundosParaHora(horaChegada); // Converte para "HH:MM:SS"
+        int tempo = leitor.lerTempoParado(rota.getOrigem().getId(), rota.getId_Linha(), horaChegadaTexto);
+        return tempo;
+    }
+
+        // converte a hora que a pessoa chegou na primeira estação e converta para segundos
+        // some o tempo para chegar até aquela estação (busca.getTempoTotal)
+        // Converta de novo para horas e encontre a proxima parada do metro
+        // subtraia a hora que chegou com o a hora que o metro vai passar
+
+        // retorne em segundos esse tempo
+
+        //
+
+        // Pega o id e le um arquivo com esse nome (Procure o proximo horario de passagem)
+
+        // Se o horario passar do ultimo que chega, printe na tela do front que é impossivel cumprir essa rota antes do metrô fechar
+        // Caso não, pegue esse horario e converta para minutos e retorne
+
+    
+
+    public boolean contemLista(String nome, List <Vertice> VerticesExplorados){
+
+        for(Vertice a : VerticesExplorados){
+            if(a.getNome().equals(nome)){
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public void preencherLista(Vertice ponto, Aresta menor, List <Aresta> ListaBusca, List <Vertice> VerticesExplorados, List <Aresta> ListaCaminhos){
+
+        for(Aresta busca : todas_Arestas){
+            if(busca.getOrigem().getNome().equals(ponto.getNome()) && contemLista(busca.getDestino().getNome(), VerticesExplorados)){
+                if(busca.getOrigem().getNome().equals("PLAZA ELIPTICA")){
+                   // System.out.println(busca.getDestino().getNome());
+                }
+                if (!busca.getId_Linha().equals(menor.getId_Linha())) {
+                    busca.setTempoTotal(busca.getTempoTotal() + calcularTempoParado(busca, busca.getOrigem().getTempo_Total()));
+                }
+                
+                busca.setTempoTotal(busca.getTempoTotal() + ponto.getTempo_Total() + busca.getTempo());
+
+                Aresta aux = busca;
+                
+                busca.setOrigem(ponto);
+                
+                ListaBusca.add(busca);
+                
+            }
+        }
+    }
+
+    public void imprimirCaminho(Vertice v, String origem, List <Vertice> VerticesExplorados) {
+        
+        if(v.getNome().equals(origem) ){
+            System.out.println(v.getNome());
+            return;
+        }
+        imprimirCaminho(v.getVerticeAnterior(), origem, VerticesExplorados);
+        System.out.println(v.getNome());
+    }
+
+
+    public void buscaMenorCaminho(String origem, String destino, String hora){
+
+        Aresta raiz = new Aresta(0, encontrarArestasNome(origem), encontrarArestasNome(origem), null);
+        raiz.setTempoTotal(converterHoraParaSegundos(hora));
+        Vertice origemVertice = encontrarArestasNome(origem);
+        Vertice Destino = encontrarArestasNome(destino);
+
+        origemVertice.setVerticeAnterior(null); // Define o vértice inicial com anterior nulo
+        origemVertice.setTempoTotal(0);
+
+        this.hora = hora;
+
+        List <Aresta> ListaBusca = new ArrayList<>();
+        List <Aresta> ListaCaminhos = new ArrayList<>();
+        List <Vertice> VerticesExplorados = new ArrayList<>();
+
+        ListaBusca.add(raiz);
+
+        while(true){
+
+            Aresta menor = encontrarMenorAresta(ListaBusca);
+            ListaBusca.remove(menor);
+
+            Vertice ponto = menor.getDestino();
+
+            if(ponto.getNome().equals(Destino.getNome())){
+
+                
+                
+                ponto.setVerticeAnterior(menor.getOrigem());
+
+                for(Vertice a : VerticesExplorados){
+                    //System.out.println(a.getNome() + "   " + a.getVerticeAnterior().getNome());
+                }
+
+                imprimirCaminho(ponto, origem, VerticesExplorados);
+
+                //System.out.println(ponto.getVerticeAnterior().getVerticeAnterior().getVerticeAnterior().getVerticeAnterior().getVerticeAnterior().getNome());
+
+                System.out.println(converterSegundosParaHora(menor.getTempoTotal()));
+
+                return;
+            }
+
+            
+
+            ponto.setTempoTotal(menor.getTempoTotal());
+
+            ponto.setVerticeAnterior(menor.getOrigem());
+
+            //System.out.println(ponto.getNome());
+
+            //System.out.println(menor.getOrigem().getNome() + "    " + menor.getDestino().getNome());
+
+            //System.out.println(ponto.getVerticeAnterior().getNome());
+
+            VerticesExplorados.add(ponto);
+
+            preencherLista(ponto, menor, ListaBusca, VerticesExplorados, ListaCaminhos);
+
+        }
+
+    }
+
+}

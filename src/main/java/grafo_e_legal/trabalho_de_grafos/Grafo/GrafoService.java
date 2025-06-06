@@ -48,4 +48,44 @@ public class GrafoService {
         return coordenadas;
     }
 
+    public void buscaMenorCaminho(String origem, String destino, String hora){
+
+        Aresta raiz = new Aresta(0, encontrarArestasNome(origem), encontrarArestasNome(origem), null);
+        raiz.setTempoTotal(converterHoraParaSegundos(hora));
+        Vertice origemVertice = encontrarArestasNome(origem);
+        Vertice Destino = encontrarArestasNome(destino);
+
+        origemVertice.setVerticeAnterior(null); // Define o vértice inicial com anterior nulo
+        origemVertice.setTempoTotal(0);
+
+        this.hora = hora;
+
+        List <Aresta> ListaBusca = new ArrayList<>();
+        List <Aresta> ListaCaminhos = new ArrayList<>();
+        List <Vertice> VerticesExplorados = new ArrayList<>();
+
+        ListaBusca.add(raiz);
+
+        while(true){
+            Aresta menor = encontrarMenorAresta(ListaBusca);
+            ListaBusca.remove(menor);
+
+            Vertice ponto = menor.getDestino();
+
+            if(ponto.getNome().equals(Destino.getNome())){
+                ponto.setVerticeAnterior(menor.getOrigem());
+
+                imprimirCaminho(ponto, origem, VerticesExplorados);
+                return;
+            }
+
+            ponto.setTempoTotal(menor.getTempoTotal());
+
+            ponto.setVerticeAnterior(menor.getOrigem());
+
+            VerticesExplorados.add(ponto);
+
+            preencherLista(ponto, menor, ListaBusca, VerticesExplorados, ListaCaminhos);
+        }
+    }
 }

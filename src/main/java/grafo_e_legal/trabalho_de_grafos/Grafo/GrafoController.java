@@ -21,4 +21,16 @@ public class GrafoController {
     public List<CoordenadaEstacao> buscaCoordenadasDasEstacoes(){
         return grafoService.buscaCoordenadasDasEstacoes();
     }
+    
+    @GetMapping("/caminho-minimo")
+    public List<CoordenadaEstacao> buscaCaminhoMinimo(
+        @RequestParam String origem, 
+        @RequestParam String destino, 
+        @RequestParam String hora
+    ){
+        System.out.print(origem, destino, hora);
+        return grafoService.buscaCaminhoMinimo(origem, destino, hora);
+    }
+
+
 }

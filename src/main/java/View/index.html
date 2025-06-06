@@ -113,28 +113,29 @@ function selecionaEstacao(estacao, elemento) {
 }
 
 
-  async function buscaCaminhoMinimo(estacao1, estacao2, horarioDeSaida) {
+  async function buscaCaminhoMinimo(estacaDeOrigem, estacaoDeDestino, horarioDeSaida) {
     try {
-      const response = await fetch(`http://localhost:8080/grafo`);
+      const response = await fetch(`http://localhost:8080/grafo/caminho-minimo?origem=${estacaDeOrigem}&destino=${estacaoDeDestino}&hora=${horarioDeSaida}`);
       const data = await response.json();
 
-      const path = [
-        {
-          "nome": "ARGANDA DEL REY",
-          "latitude": 40.3037,
-          "longitude": -3.44752
-        },
-        {
-          "nome": "LA POVEDA",
-          "latitude": 40.3190,
-          "longitude": -3.47745
-        },
-        {
-          "nome": "RIVAS VACIAMADRID",
-          "latitude": 40.3284,
-          "longitude": -3.5206
-        }
-      ]
+      // const path = [
+      //   {
+      //     "nome": "ARGANDA DEL REY",
+      //     "latitude": 40.3037,
+      //     "longitude": -3.44752
+      //   },
+      //   {
+      //     "nome": "LA POVEDA",
+      //     "latitude": 40.3190,
+      //     "longitude": -3.47745
+      //   },
+      //   {
+      //     "nome": "RIVAS VACIAMADRID",
+      //     "latitude": 40.3284,
+      //     "longitude": -3.5206
+      //   }
+      // ]
+
       updateTerminal(`Caminho mais curto: ${path.map(estacao => estacao.nome).join(' -> ')}`);
       // updateTerminal(`Distância total: ${data.totalDistance.toFixed(2)} km`);
       desenhaCaminho(path);
