@@ -12,7 +12,7 @@ def extract_stations(stops_file, vertices_file, output_file='output_stations.csv
     filtered_df = stops_df[stops_df['stop_id'].isin(desired_stop_ids)]
 
     # Passo 3.1: Remover duplicatas com base no stop_id (mantém a primeira ocorrência)
-    filtered_df = filtered_df.drop_duplicates(subset='stop_id')
+    filtered_df = filtered_df.drop_duplicates(subset='stop_name')
 
     # Passo 4: Salvar resultado em CSV
     filtered_df.to_csv(output_file, index=False)
