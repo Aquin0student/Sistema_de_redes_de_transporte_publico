@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mapa de Estações de Metrô de Madrid</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -24,6 +24,18 @@
       background-color: #4ade80;
       border-color: #16a34a;
       color: #000;
+    }
+
+    .tooltip-origem-destino {
+      background-color: #4ade80;
+      border-color: #16a34a;
+      color: #000;
+    }
+
+    .tooltip-caminho {
+      background-color: #3b82f6;
+      border-color: #1d4ed8;
+      color: #fff;
     }
 
     #info-panel {
@@ -147,10 +159,9 @@
       const estacoesDoCaminhoMinimo = await response.json();
       const horaDeChegada = estacoesDoCaminhoMinimo.pop();
 
-      //updateInfoPanel(`Caminho mais curto: ${estacoesDoCaminhoMinimo.map(estacao => estacao).join(' → ')}`);
       updateInfoPanel(`Hora de chegada: ${horaDeChegada}`);
-
       desenhaCaminho(estacoesDoCaminhoMinimo);
+      colorirTooltips(estacoesDoCaminhoMinimo, origem.nome, destino.nome);
       limpaAsSelecoes();
     } catch (error) {
       updateInfoPanel(`Erro ao obter o caminho: ${error.message}`);
@@ -167,16 +178,13 @@
         [estacoesComCoordenadas[i].latitude, estacoesComCoordenadas[i].longitude],
         [estacoesComCoordenadas[i + 1].latitude, estacoesComCoordenadas[i + 1].longitude]
       ];
-
       const linha = L.polyline(coordenadas, { color: 'blue' }).addTo(map);
       polylines.push(linha);
     }
   }
 
   function limpaAsLinhasDoMapa() {
-    polylines.forEach(linha => {
-      linha.remove();
-    });
+    polylines.forEach(linha => linha.remove());
     polylines = [];
   }
 
@@ -204,6 +212,28 @@
     });
     markers = [];
     updateInfoPanel('Seleção de estações reiniciada.');
+  }
+
+  function limpaTooltipsColoridas() {
+    document.querySelectorAll('.leaflet-tooltip-own').forEach(el => {
+      el.classList.remove('tooltip-origem-destino', 'tooltip-caminho');
+    });
+  }
+
+  function colorirTooltips(estacoes, origem, destino) {
+    limpaTooltipsColoridas();
+    estacoes.forEach(nomeEstacao => {
+      const tooltip = Array.from(document.querySelectorAll('.leaflet-tooltip-own'))
+        .find(el => el.textContent.trim() === nomeEstacao.trim());
+
+      if (tooltip) {
+        if (nomeEstacao === origem || nomeEstacao === destino) {
+          tooltip.classList.add('tooltip-origem-destino');
+        } else {
+          tooltip.classList.add('tooltip-caminho');
+        }
+      }
+    });
   }
 </script>
 </body>
