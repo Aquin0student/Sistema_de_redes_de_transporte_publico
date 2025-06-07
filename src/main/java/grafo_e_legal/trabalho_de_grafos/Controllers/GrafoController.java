@@ -11,11 +11,11 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 @RequestMapping("/api/grafo")
 public class GrafoController {
-
-    private final Grafo grafo = new Grafo(); // grafo instanciado na criação do controller
+    
 
     @GetMapping
     public List<CoordenadaEstacao> buscaCoordenadasDasEstacoes(){
+        Grafo grafo = new Grafo(); // grafo instanciado na criação do controller
         return grafo.buscaCoordenadasDasEstacoes();
     }
 
@@ -30,7 +30,6 @@ public class GrafoController {
     public List<String> buscarMenorCaminho(@RequestBody BuscaCaminhoRequest request) {
         Grafo grafo = new Grafo();
         String horaSegundos = request.hora + ":00";
-        System.out.println(horaSegundos);
         return grafo.buscaMenorCaminho(request.origem, request.destino, horaSegundos);
     }
 }

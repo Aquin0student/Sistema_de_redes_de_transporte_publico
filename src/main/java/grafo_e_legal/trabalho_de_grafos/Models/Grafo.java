@@ -148,6 +148,7 @@ public class Grafo {
     }
 
     public List<String> buscaMenorCaminho(String origem, String destino, String hora){
+        this.hora = hora;
         Aresta raiz = new Aresta(0, encontrarArestasNome(origem), encontrarArestasNome(origem), null);
         raiz.setTempoTotal(converterHoraParaSegundos(hora));
         Vertice origemVertice = encontrarArestasNome(origem);
@@ -155,8 +156,6 @@ public class Grafo {
 
         origemVertice.setVerticeAnterior(null); // Define o vértice inicial com anterior nulo
         origemVertice.setTempoTotal(0);
-
-        this.hora = hora;
 
         List <Aresta> ListaBusca = new ArrayList<>();
         List <Aresta> ListaCaminhos = new ArrayList<>();
@@ -176,6 +175,7 @@ public class Grafo {
                 List<String> estacoesDoCaminhoMinimo = new ArrayList<>();
                 imprimirCaminho(ponto, origem, estacoesDoCaminhoMinimo);
                 estacoesDoCaminhoMinimo.add(converterSegundosParaHora(menor.getTempoTotal()));
+
                 return estacoesDoCaminhoMinimo;
             }
 

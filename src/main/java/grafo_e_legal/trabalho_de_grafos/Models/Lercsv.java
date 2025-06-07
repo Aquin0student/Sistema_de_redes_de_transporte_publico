@@ -1,5 +1,6 @@
 package grafo_e_legal.trabalho_de_grafos.Models;
 
+import java.util.Collections;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -106,7 +107,6 @@ public class Lercsv {
             String linha;
                 while ((linha = leitor.readLine()) != null) {
                     linhas.add(linha);
-                    //System.out.println(linha);
                 }
 
         }
@@ -131,50 +131,35 @@ public class Lercsv {
     }
 
     public long calcularTempoEspera(String horarioChegada, List<String> horariosEstacao) {
-        // Converte o horário de chegada para segundos
         long chegadaSegundos = converterParaSegundos(horarioChegada);
-        if (chegadaSegundos < 0) {
-            return -1; // Horário de chegada inválido
-        }
+        if (chegadaSegundos < 0) return -1;
 
-        // Converte todos os horários da estação para segundos
+        // Se a chegada for de madrugada (até 03:00), considera como parte do dia seguinte
+
         List<Long> horariosSegundos = new ArrayList<>();
         for (String horario : horariosEstacao) {
-            // Extrai apenas o horário (remove "par_4_209,")
-            String hora = horario.split(",")[1];
-            long segundos = converterParaSegundos(hora);
-            if (segundos >= 0) {
+            String[] partes = horario.split(",");
+            if (partes.length > 1) {
+                String hora = partes[1];
+                long segundos = converterParaSegundos(hora);
                 horariosSegundos.add(segundos);
             }
         }
 
-        // Encontra o próximo horário de partida
-        long proximoHorario = -1;
+        Collections.sort(horariosSegundos);
+
         for (long horario : horariosSegundos) {
             if (horario >= chegadaSegundos) {
-                proximoHorario = horario;
-                break;
+                return horario - chegadaSegundos;
             }
         }
 
-        // Se não encontrou um horário no mesmo dia, pega o primeiro do próximo dia
-        if (proximoHorario == -1 && !horariosSegundos.isEmpty()) {
-            proximoHorario = horariosSegundos.get(0) + 86400; // Adiciona 24 horas
+        // Se não encontrou nada, aguarda o primeiro do próximo dia
+        if (!horariosSegundos.isEmpty()) {
+            return 86400;
         }
 
-        // Calcula o tempo de espera em segundos
-        if (proximoHorario >= 0) {
-            long diferencaSegundos = proximoHorario - chegadaSegundos;
-            // Se a diferença for negativa, ajusta para o próximo dia
-            if (diferencaSegundos < 0) {
-                diferencaSegundos += 86400;
-            }
-            //System.out.println(proximoHorario);
-            //System.out.println(diferencaSegundos);
-            return diferencaSegundos;
-        }
-
-        return -1; // Nenhum horário válido encontrado
+        return -1;
     }
 
 }
