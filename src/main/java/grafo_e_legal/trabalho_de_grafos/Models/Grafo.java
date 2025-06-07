@@ -138,13 +138,13 @@ public class Grafo {
         }
     }
 
-    public void imprimirCaminho(Vertice v, String origem, List<String> teste) {
+    public void imprimirCaminho(Vertice v, String origem, List<String> estacoesDoCaminhoMinimo) {
         if(v.getNome().equals(origem) ){
-            teste.add(0, v.getNome());
+            estacoesDoCaminhoMinimo.add(0, v.getNome());
             return;
         }
-        teste.add(0, v.getNome());
-        imprimirCaminho(v.getVerticeAnterior(), origem, teste);
+        estacoesDoCaminhoMinimo.add(0, v.getNome());
+        imprimirCaminho(v.getVerticeAnterior(), origem, estacoesDoCaminhoMinimo);
     }
 
     public List<String> buscaMenorCaminho(String origem, String destino, String hora){
