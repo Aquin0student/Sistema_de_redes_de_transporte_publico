@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    #map { height: 800px; }
+    #map { height: 600px; }
 
     .leaflet-tooltip-own {
       background: white;
@@ -33,7 +33,7 @@
       padding: 16px;
       border-radius: 8px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      height: 800px;
+      height: 600px;
       overflow-y: auto;
       width: 300px;
       margin-top: 130px;
@@ -145,10 +145,10 @@
         })
       });
       const estacoesDoCaminhoMinimo = await response.json();
-      const tempoGasto = estacoesDoCaminhoMinimo.pop();
+      const horaDeChegada = estacoesDoCaminhoMinimo.pop();
 
-      updateInfoPanel(`Caminho mais curto: ${estacoesDoCaminhoMinimo.map(estacao => estacao).join(' → ')}`);
-      updateInfoPanel(`Tempo gasto: ${tempoGasto}`);
+      //updateInfoPanel(`Caminho mais curto: ${estacoesDoCaminhoMinimo.map(estacao => estacao).join(' → ')}`);
+      updateInfoPanel(`Hora de chegada: ${horaDeChegada}`);
 
       desenhaCaminho(estacoesDoCaminhoMinimo);
       limpaAsSelecoes();

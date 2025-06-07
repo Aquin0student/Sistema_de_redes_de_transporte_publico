@@ -28,6 +28,9 @@ public class GrafoController {
 
     @PostMapping("/menor-caminho")
     public List<String> buscarMenorCaminho(@RequestBody BuscaCaminhoRequest request) {
-        return grafo.buscaMenorCaminho(request.origem, request.destino, request.hora);
+        Grafo grafo = new Grafo();
+        String horaSegundos = request.hora + ":00";
+        System.out.println(horaSegundos);
+        return grafo.buscaMenorCaminho(request.origem, request.destino, horaSegundos);
     }
 }
