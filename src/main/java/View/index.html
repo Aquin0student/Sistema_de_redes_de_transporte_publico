@@ -6,177 +6,240 @@
   <title>Mapa de Estações de Metrô de Madrid</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://cdn.tailwindcss.com"></script>
-<style>
-  #map { height: 800px; }
+  <style>
+    .container-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 16px;
+      height: calc(100vh - 120px); /* Ajusta para altura da tela menos cabeçalho */
+    }
 
-  .leaflet-tooltip-own {
-    background: white;
-    border: 1px solid gray;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-weight: bold;
-    font-size: 12px;
-    pointer-events: auto; 
-    cursor: pointer;      
-  }
+    #map {
+      height: 100%;
+      width: 100%;
+    }
 
-  .tooltip-selecionada {
-  background-color: #4ade80;
-  border-color: #16a34a; 
-  color: #000;
-}
+    .leaflet-tooltip-own {
+      background: white;
+      border: 1px solid gray;
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-weight: bold;
+      font-size: 12px;
+      pointer-events: auto;
+      cursor: pointer;
+    }
 
+    .tooltip-selecionada {
+      background-color: #4ade80;
+      border-color: #16a34a;
+      color: #000;
+    }
 
-  #terminal {
-    background: #ffffff;
-    color: #000000;
-    font-family: 'Courier New', monospace;
-    padding: 10px;
-    height: 150px;
-    overflow-y: auto;
-    border-radius: 5px;
-  }
-</style>
+    #info-panel {
+      position: fixed;
+      right: 50px;
+      top: 120px; /* Ajusta para alinhar abaixo do cabeçalho */
+      width: 250px;
+      height: 300px;
+      background: #ffffff;
+      border-left: 1px solid #e5e7eb;
+      border-radius: 8px 0 0 8px;
+      box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
+      padding: 16px;
+      overflow-y: auto;
+    }
 
+    .info-section {
+      margin-bottom: 16px;
+    }
+
+    .info-section h3 {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .error-message {
+      color: #dc2626;
+      font-weight: medium;
+    }
+
+    .success-message {
+      color: #16a34a;
+      font-weight: medium;
+    }
+
+    @media (max-width: 768px) {
+      .container-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+        height: auto;
+      }
+
+      #info-panel {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        border-left: none;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      #map {
+        height: 400px; /* Altura reduzida em telas menores */
+      }
+    }
+  </style>
 </head>
 <body class="bg-gray-100">
-<div class="container mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4">Mapa de Estações de Metrô de Madrid - Selecione Duas Estações</h1>
-  <div class="mb-4">
-    <label for="horario-saida" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
-    <input type="time" id="horario-saida" class="mt-1 p-2 border rounded-md" required>
+  <div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">Mapa de Estações de Metrô de Madrid - Selecione Duas Estações</h1>
+    <div class="mb-4">
+      <label for="horario-saida" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
+      <input type="time" id="horario-saida" class="mt-1 p-2 border rounded-md" required>
+    </div>
+    <div class="container-grid">
+      <div id="map"></div>
+      <div id="info-panel" class="text-sm">
+        <div class="info-section">
+          <h3>Estações Selecionadas</h3>
+          <p id="estacoes-selecionadas">Nenhuma estação selecionada.</p>
+        </div>
+        <div class="info-section">
+          <h3>Caminho Mais Curto</h3>
+          <p id="caminho-resultado">Selecione duas estações para ver o caminho.</p>
+        </div>
+        <div class="info-section">
+          <h3>Status</h3>
+          <p id="mensagem-status" class="text-gray-600">Clique em duas estações para obter o caminho mais curto.</p>
+        </div>
+      </div>
+    </div>
   </div>
-  <div id="map" class="mb-4"></div>
-  <div id="terminal" class="text-sm">Terminal: Clique em duas estações para obter o caminho mais curto.</div>
-</div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-  const map = L.map('map').setView([40.4168, -3.7038], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([40.4168, -3.7038], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
 
-  let estacoesSelecionadas = [];
-  let markers = [];
-  let polylines = [];
+    let estacoesSelecionadas = [];
+    let markers = [];
+    let polylines = [];
 
-  inicializaAsEstacoes()
+    inicializaAsEstacoes();
 
-  async function inicializaAsEstacoes() {
-    try {
-      const response = await fetch(`http://localhost:8080/grafo`);
-      const data = await response.json();
+    async function inicializaAsEstacoes() {
+      try {
+        const response = await fetch(`http://localhost:8080/grafo`);
+        const data = await response.json();
 
-      data.forEach(estacao => {
-        const tooltip = L.tooltip({
-          permanent: true,
-          direction: 'top',
-          offset: [0, 0],
-          className: 'leaflet-tooltip-own'
-        })
-        .setLatLng([estacao.latitude, estacao.longitude])
-        .setContent(estacao.nome)
-        .addTo(map);
+        data.forEach(estacao => {
+          const tooltip = L.tooltip({
+            permanent: true,
+            direction: 'top',
+            offset: [0, 0],
+            className: 'leaflet-tooltip-own'
+          })
+            .setLatLng([estacao.latitude, estacao.longitude])
+            .setContent(estacao.nome)
+            .addTo(map);
 
-        // Aguarda o tooltip ser adicionado ao DOM
-        setTimeout(() => {
-          const el = tooltip.getElement();
-          el.addEventListener('click', () => selecionaEstacao(estacao, tooltip));
-        }, 0);
+          setTimeout(() => {
+            const el = tooltip.getElement();
+            el.addEventListener('click', () => selecionaEstacao(estacao, tooltip));
+          }, 0);
+        });
+      } catch (error) {
+        updateStatus(`Erro ao obter as estações: ${error.message}`, 'error');
+      }
+    }
+
+    function selecionaEstacao(estacao, elemento) {
+      if (estacoesSelecionadas.length < 2) {
+        estacoesSelecionadas.push(estacao);
+        markers.push(elemento);
+        const el = elemento.getElement();
+        el.classList.add("tooltip-selecionada");
+        updateEstacoesSelecionadas();
+        updateStatus(`Estação selecionada: ${estacao.nome}`, 'success');
+      }
+
+      if (estacoesSelecionadas.length === 2) {
+        const horarioDeSaida = document.getElementById('horario-saida').value;
+        if (!horarioDeSaida) {
+          updateStatus('Por favor, informe o horário de saída.', 'error');
+          limpaAsSelecoes();
+          return;
+        }
+        buscaCaminhoMinimo(estacoesSelecionadas[0], estacoesSelecionadas[1], horarioDeSaida);
+      }
+    }
+
+    async function buscaCaminhoMinimo(estacaDeOrigem, estacaoDeDestino, horarioDeSaida) {
+      try {
+        const response = await fetch(`http://localhost:8080/grafo/menor-caminho?origem=${estacaDeOrigem.nome}&destino=${estacaoDeDestino.nome}&hora=${horarioDeSaida}`);
+        const path = await response.json();
+        updateCaminhoResultado(`Caminho mais curto: ${path.map(estacao => estacao.nome).join(' → ')}`);
+        updateStatus('Caminho calculado com sucesso!', 'success');
+        desenhaCaminho(path);
+        limpaAsSelecoes();
+      } catch (error) {
+        updateStatus(`Erro ao obter o caminho: ${error.message}`, 'error');
+        limpaAsSelecoes();
+      }
+    }
+
+    function desenhaCaminho(path) {
+      for (let i = 0; i < path.length - 1; i++) {
+        const coordenadas = [
+          [path[i].latitude, path[i].longitude],
+          [path[i + 1].latitude, path[i + 1].longitude]
+        ];
+        const polyline = L.polyline(coordenadas, { color: 'blue' }).addTo(map);
+        polylines.push(polyline);
+      }
+    }
+
+    function updateEstacoesSelecionadas() {
+      let estacoesText;
+      if (estacoesSelecionadas.length === 0) {
+        estacoesText = 'Nenhuma estação selecionada.';
+      } else {
+        estacoesText = estacoesSelecionadas.map(e => e.nome).join(' e ');
+      }
+      document.getElementById('estacoes-selecionadas').textContent = estacoesText;
+    }
+
+    function updateCaminhoResultado(message) {
+      document.getElementById('caminho-resultado').textContent = message;
+    }
+
+    function updateStatus(message, type) {
+      const statusElement = document.getElementById('mensagem-status');
+      statusElement.textContent = message;
+      if (type === 'error') {
+        statusElement.className = 'error-message';
+      } else {
+        statusElement.className = 'success-message';
+      }
+    }
+
+    function limpaAsSelecoes() {
+      estacoesSelecionadas = [];
+      markers.forEach(el => {
+        const domEl = el.getElement();
+        domEl.classList.remove("tooltip-selecionada");
       });
-
-
-    } catch (error) {
-      updateTerminal(`Erro ao obter as estações: ${error.message}`);
+      markers = [];
+      polylines.forEach(polyline => map.removeLayer(polyline));
+      polylines = [];
+      updateEstacoesSelecionadas();
+      updateCaminhoResultado('Selecione duas estações para ver o caminho.');
+      updateStatus('Seleção de estações reiniciada.', 'success');
     }
-  }
-
-function selecionaEstacao(estacao, elemento) {
-  if (estacoesSelecionadas.length < 2) {
-    estacoesSelecionadas.push(estacao);
-    markers.push(elemento);
-    const el = elemento.getElement();
-    el.classList.add("tooltip-selecionada");
-  }
-  updateTerminal(`Estação selecionada: ${estacao.nome}`);
-
-  if (estacoesSelecionadas.length === 2) {
-    const horarioDeSaida = document.getElementById('horario-saida').value;
-    if (!horarioDeSaida) {
-      updateTerminal('Por favor, informe o horário de saída.');
-      limpaAsSelecoes();
-      return;
-    }
-    buscaCaminhoMinimo(estacoesSelecionadas[0], estacoesSelecionadas[1], horarioDeSaida);
-  }
-}
-
-
-  async function buscaCaminhoMinimo(estacaDeOrigem, estacaoDeDestino, horarioDeSaida) {
-    try {
-      console.log("aq?", estacaDeOrigem.nome)
-      const response = await fetch(`http://localhost:8080/grafo/caminho-minimo?origem=${estacaDeOrigem.nome}&destino=${estacaoDeDestino.nome}&hora=${horarioDeSaida}`);
-      const data = await response.json();
-
-      // const path = [
-      //   {
-      //     "nome": "ARGANDA DEL REY",
-      //     "latitude": 40.3037,
-      //     "longitude": -3.44752
-      //   },
-      //   {
-      //     "nome": "LA POVEDA",
-      //     "latitude": 40.3190,
-      //     "longitude": -3.47745
-      //   },
-      //   {
-      //     "nome": "RIVAS VACIAMADRID",
-      //     "latitude": 40.3284,
-      //     "longitude": -3.5206
-      //   }
-      // ]
-
-      updateTerminal(`Caminho mais curto: ${path.map(estacao => estacao.nome).join(' -> ')}`);
-      // updateTerminal(`Distância total: ${data.totalDistance.toFixed(2)} km`);
-      desenhaCaminho(path);
-      limpaAsSelecoes();
-    } catch (error) {
-      updateTerminal(`Erro ao obter o caminho: ${error.message}`);
-      limpaAsSelecoes();
-    }
-  }
-
-  function desenhaCaminho(path) {
-    for (let i = 0; i < path.length - 1; i++) {
-      const coordenadas = [
-        [path[i].latitude, path[i].longitude],
-        [path[i + 1].latitude, path[i + 1].longitude]
-      ]
-      L.polyline(coordenadas, { color: 'blue' }).addTo(map);
-    }
-  }
-
-  function updateTerminal(message) {
-    const terminal = document.getElementById('terminal');
-    terminal.innerHTML += `<p>${message}</p>`;
-    terminal.scrollTop = terminal.scrollHeight;
-  }
-
-function limpaAsSelecoes() {
-  estacoesSelecionadas = [];
-  markers.forEach(el => {
-    const domEl = el.getElement();
-    domEl.style.opacity = 1;
-    domEl.classList.remove("tooltip-selecionada");
-  });
-  markers = [];
-  polylines.forEach(polyline => map.removeLayer(polyline));
-  polylines = [];
-  updateTerminal('Seleção de estações reiniciada.');
-}
-
-
-</script>
+  </script>
 </body>
 </html>
