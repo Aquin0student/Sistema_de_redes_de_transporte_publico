@@ -1,0 +1,20 @@
+@startuml
+[] --> AguardandoEntrada : Início do sistema
+
+state AguardandoEntrada {
+  [] --> SelecionandoOrigem
+  SelecionandoOrigem --> SelecionandoDestino : Origem selecionada
+  SelecionandoDestino --> InformandoHorario : Destino selecionado
+  InformandoHorario --> ProntoParaBusca : Horário informado
+}
+
+ProntoParaBusca --> ProcessandoBusca : Clicou em "Buscar rota"
+
+ProcessandoBusca --> RotaEncontrada : Caminho encontrado
+ProcessandoBusca --> ErroNaBusca : Falha ao buscar rota
+
+RotaEncontrada --> ExibindoRota : Exibir rota no mapa
+ExibindoRota --> []
+
+ErroNaBusca --> []
+@enduml

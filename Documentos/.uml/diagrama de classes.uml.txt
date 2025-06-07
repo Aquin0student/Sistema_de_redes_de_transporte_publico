@@ -1,0 +1,41 @@
+@startuml
+
+class Aresta{
+-id: int
+-tempo_Deslocamento: int
+-tempo_total: int
+-origem: Vertice
+-destino: Vertice
+-id_Linha: String
+}
+
+
+
+class Vertice{
+-id: String
+-nome_Estacao: String
+-tempo_Espera: int
+-tempo_total: int
+-vertice_Anterior: Vertice
+}
+
+class Grafo{
+-linhas: List<Linha>
+-todas_Estacoes: List<Vertice>
+-todas_Arestas: List<Aresta>
+-hora: String
++encontrarArestasNome(String nome): Vertice
++encontrarMenorAresta(List <Aresta> ListaBusca): Aresta
++calcularTempoParado(Aresta rota, int intervalo): int
++contemLista(String nome, List <Vertice> VerticesExplorados): bool
++preencherLista(Vertice ponto, Aresta menor, List <Aresta> ListaBusca, List <Vertice> VerticesExplorados, List <Aresta> ListaCaminhos): void
++imprimirCaminho(Vertice v, String origem, List <Vertice> VerticesExplorados): void
++buscaMenorCaminho(String origem, String destino, String hora): void
+
+}
+
+Aresta --> Vertice: "1"
+Grafo "1" -- "1.." Vertice
+Grafo "1" -- "1.." Aresta
+
+@enduml

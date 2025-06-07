@@ -1,0 +1,19 @@
+@startuml
+actor Usuario
+
+rectangle "Sistema de Rotas" {
+  usecase "Selecionar ponto de origem" as U1
+  usecase "Selecionar ponto de destino" as U2
+  usecase "Informar horário" as U3
+  usecase "Buscar rota" as U4
+  usecase "Visualizar rota no mapa" as U5
+}
+
+Usuario --> U1
+Usuario --> U2
+Usuario --> U3
+Usuario --> U4
+Usuario --> U5
+
+U4 --> U5 : <<include>>
+@enduml
