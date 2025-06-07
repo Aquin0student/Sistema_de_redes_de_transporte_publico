@@ -26,28 +26,50 @@
       color: #000;
     }
 
-
-    #terminal {
+    #info-panel {
       background: #ffffff;
       color: #000000;
-      font-family: 'Courier New', monospace;
-      padding: 10px;
-      height: 150px;
+      font-family: 'Arial', sans-serif;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      height: 800px;
       overflow-y: auto;
-      border-radius: 5px;
+      width: 300px;
+      margin-top: 130px;
+    }
+
+    .info-message {
+      margin-bottom: 12px;
+      padding: 8px;
+      border-left: 4px solid #4ade80;
+      background: #f9fafb;
+      border-radius: 4px;
+    }
+
+    .info-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 16px;
     }
   </style>
-
 </head>
 <body class="bg-gray-100">
-<div class="container mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-4">Mapa de Estações de Metrô de Madrid - Selecione Duas Estações</h1>
-  <div class="mb-4">
-    <label for="horario-saida" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
-    <input type="time" id="horario-saida" class="mt-1 p-2 border rounded-md" required>
+<div class="container mx-auto p-4 flex flex-col lg:flex-row gap-4">
+  <div class="flex-1">
+    <h1 class="text-2xl font-bold mb-4">Mapa de Estações de Metrô de Madrid - Selecione Duas Estações</h1>
+    <div class="mb-4">
+      <label for="horario-saida" class="block text-sm font-medium text-gray-700">Horário de Saída:</label>
+      <input type="time" id="horario-saida" class="mt-1 p-2 border rounded-md" required>
+    </div>
+    <div id="map" class="mb-4"></div>
   </div>
-  <div id="map" class="mb-4"></div>
-  <div id="terminal" class="text-sm">Terminal: Clique em duas estações para obter o caminho mais curto.</div>
+  <div id="info-panel" class="lg:w-1/4">
+    <div class="info-title">Informações</div>
+    <div id="info-content">
+      <div class="info-message">Clique em duas estações para obter o caminho mais curto.</div>
+    </div>
+  </div>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -58,11 +80,11 @@
   }).addTo(map);
 
   let estacoesSelecionadas = [];
-  let todasEstacoes = []
+  let todasEstacoes = [];
   let markers = [];
   let polylines = [];
 
-  inicializaAsEstacoes()
+  inicializaAsEstacoes();
 
   async function inicializaAsEstacoes() {
     try {
@@ -84,10 +106,8 @@
         const el = tooltip.getElement();
         el.addEventListener('click', () => selecionaEstacao(estacao, tooltip));
       });
-
-
     } catch (error) {
-      updateTerminal(`Erro ao obter as estações: ${error.message}`);
+      updateInfoPanel(`Erro ao obter as estações: ${error.message}`);
     }
   }
 
@@ -98,19 +118,18 @@
       const el = elemento.getElement();
       el.classList.add("tooltip-selecionada");
     }
-    updateTerminal(`Estação selecionada: ${estacao.nome}`);
+    updateInfoPanel(`Estação selecionada: ${estacao.nome}`);
 
     if (estacoesSelecionadas.length === 2) {
       const horarioDeSaida = document.getElementById('horario-saida').value;
       if (!horarioDeSaida) {
-        updateTerminal('Por favor, informe o horário de saída.');
+        updateInfoPanel('Por favor, informe o horário de saída.');
         limpaAsSelecoes();
         return;
       }
       buscaCaminhoMinimo(estacoesSelecionadas[0], estacoesSelecionadas[1], horarioDeSaida);
     }
   }
-
 
   async function buscaCaminhoMinimo(origem, destino, hora) {
     try {
@@ -126,15 +145,15 @@
         })
       });
       const estacoesDoCaminhoMinimo = await response.json();
-      const tempoGasto = estacoesDoCaminhoMinimo.pop()
+      const tempoGasto = estacoesDoCaminhoMinimo.pop();
 
-      updateTerminal(`Caminho mais curto: ${estacoesDoCaminhoMinimo.map(estacao => estacao).join(' -> ')}`);
-      updateTerminal(`Tempo gasto: ${tempoGasto}`);
+      updateInfoPanel(`Caminho mais curto: ${estacoesDoCaminhoMinimo.map(estacao => estacao).join(' → ')}`);
+      updateInfoPanel(`Tempo gasto: ${tempoGasto}`);
 
       desenhaCaminho(estacoesDoCaminhoMinimo);
       limpaAsSelecoes();
     } catch (error) {
-      updateTerminal(`Erro ao obter o caminho: ${error.message}`);
+      updateInfoPanel(`Erro ao obter o caminho: ${error.message}`);
       limpaAsSelecoes();
     }
   }
@@ -147,33 +166,33 @@
       const coordenadas = [
         [estacoesComCoordenadas[i].latitude, estacoesComCoordenadas[i].longitude],
         [estacoesComCoordenadas[i + 1].latitude, estacoesComCoordenadas[i + 1].longitude]
-      ]
+      ];
 
       const linha = L.polyline(coordenadas, { color: 'blue' }).addTo(map);
-      const el = linha.getElement();
-      el.classList.add("linha")
-      polylines.push(el);
+      polylines.push(linha);
     }
   }
 
-  function limpaAsLinhasDoMapa(){
+  function limpaAsLinhasDoMapa() {
     polylines.forEach(linha => {
-      linha.remove()
+      linha.remove();
     });
     polylines = [];
   }
 
-  function buscaCoordenadaDasEstacoes(estacoesDoCaminhoMinimo){
+  function buscaCoordenadaDasEstacoes(estacoesDoCaminhoMinimo) {
     return estacoesDoCaminhoMinimo.map(nome => {
       return todasEstacoes.find(estacao => estacao.nome === nome);
     });
-
   }
 
-  function updateTerminal(message) {
-    const terminal = document.getElementById('terminal');
-    terminal.innerHTML += `<p>${message}</p>`;
-    terminal.scrollTop = terminal.scrollHeight;
+  function updateInfoPanel(message) {
+    const infoContent = document.getElementById('info-content');
+    const messageElement = document.createElement('div');
+    messageElement.className = 'info-message';
+    messageElement.textContent = message;
+    infoContent.appendChild(messageElement);
+    infoContent.scrollTop = infoContent.scrollHeight;
   }
 
   function limpaAsSelecoes() {
@@ -184,7 +203,7 @@
       domEl.classList.remove("tooltip-selecionada");
     });
     markers = [];
-    updateTerminal('Seleção de estações reiniciada.');
+    updateInfoPanel('Seleção de estações reiniciada.');
   }
 </script>
 </body>
